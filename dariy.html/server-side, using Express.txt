@@ -1,0 +1,21 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const app = express();
+const port = 3000;
+
+app.use(bodyParser.json());
+
+// Store the current password on the server side
+let currentPassword = 'your_secret_password';
+
+app.post('/verify-password', (req, res) => {
+    const enteredPassword = req.body.password;
+    const valid = enteredPassword === currentPassword;
+    res.json({ valid });
+});
+
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+

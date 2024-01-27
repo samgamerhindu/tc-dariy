@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secured Diary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #diary-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #entry-form textarea, #entry-form input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #entry-list {
+            text-align: left;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="diary-container">
+        <h1>Secured Diary</h1>
+
+        <div id="entry-form">
+            <label for="entry">New Entry:</label>
+            <textarea id="entry" placeholder="Write your thoughts here..."></textarea>
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Set a password...">
+            <button onclick="addEntry()">Add Entry</button>
+        </div>
+
+        <div id="entry-list">
+            <h2>Entries</h2>
+            <button onclick="showEntries()">Show Entries</button>
+            <ul id="entries" style="display:none;"></ul>
+        </div>
+    </div>
+
+    <script>
+        let passwordEntered = false;
+
+        function addEntry() {
+            if (!passwordEntered) {
+                alert('Please enter the correct password to add an entry.');
+                return;
+            }
+
+            const entryText = document.getElementById('entry').value;
+
+            if (entryText.trim() !== '') {
+                const entryList = document.getElementById('entries');
+                const entryItem = document.createElement('li');
+                entryItem.innerHTML = entryText;
+                entryList.appendChild(entryItem);
+
+                // Clear the text area after adding an entry
+                document.getElementById('entry').value = '';
+            } else {
+                alert('Please enter some text before adding an entry.');
+            }
+        }
+
+        function showEntries() {
+            const enteredPassword = prompt('Enter the password to view entries:');
+
+            // Send a request to the server to verify the entered password
+            fetch('/verify-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ password: enteredPassword }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.valid) {
+                    passwordEntered = true;
+                    document.getElementById('entries').style.display = 'block';
+                } else {
+                    alert('Incorrect password. Entries can\'t be displayed.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
+
+
