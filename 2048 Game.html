@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #2c3e50;
+            color: white;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(4, 100px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .tile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+            height: 100px;
+            background-color: #bdc3c7;
+            font-size: 2em;
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .tile-2 { background-color: #f39c12; }
+        .tile-4 { background-color: #e67e22; }
+        .tile-8 { background-color: #d35400; }
+        .tile-16 { background-color: #c0392b; }
+        .tile-32 { background-color: #e74c3c; }
+        .tile-64 { background-color: #c0392b; }
+        .tile-128 { background-color: #f39c12; }
+        .tile-256 { background-color: #f1c40f; }
+        .tile-512 { background-color: #f39c12; }
+        .tile-1024 { background-color: #f1c40f; }
+        .tile-2048 { background-color: #2ecc71; }
+        #score, #timer {
+            font-size: 1.5em;
+            margin: 10px;
+        }
+        #settingsMenu {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid white;
+            display: none;
+            text-align: center;
+        }
+        #settingsMenu select, #settingsMenu button {
+            margin: 10px;
+        }
+        #settingsMenu button {
+            background-color: #e74c3c;
+        }
+        #gameOver {
+            color: red;
+            font-size: 2em;
+            display: none;
+        }
+        .controls {
+            margin: 10px 0;
+        }
+        .controls button {
+            font-size: 1.2em;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .controls button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>2048 Game</h1>
+    <div class="controls">
+        <button id="startGame">Start Game</button>
+        <button id="openSettings">Settings</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p id="score">Score: 0</p>
+    <p id="timer">Time: 0s</p>
+    <p id="gameOver">Game Over!</p>
+
+    <!-- Settings Menu -->
+    <div id="settingsMenu">
+        <h2>Settings</h2>
+        <label for="controlsSelect">Choose Controls:</label>
+        <select id="controlsSelect">
+            <option value="wasd">W, A, S, D</option>
+            <option value="arrows">Arrow Keys</option>
+        </select>
+        <br>
+        <button id="closeSettings">Save and Close</button>
+    <h1>2048 Game</h1>
+    <div class="grid" id="grid"></div>
+    <p id="score">Score: 0</p>
+    <p id="timer">Time: 0s</p>
+    <p id="gameOver">Game Over!</p>
+    
+    <footer>Made by Sangamesh Hiremath</footer>
+    </div>
+    <script>
+       // Constants
+        const gridSize = 4;
+        let score = 0;
+        let timer = 0;
+        let gameInterval, timerInterval;
+        let selectedControls = 'arrows'; // Default controls (Arrow Keys)
+        const grid = document.getElementById('grid');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const gameOverDisplay = document.getElementById('gameOver');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const controlsSelect = document.getElementById('controlsSelect');
+        const closeSettingsBtn = document.getElementById('closeSettings');
+
+        // Grid setup
+        const board = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
+
+        // Render grid
+        function renderBoard() {
+            grid.innerHTML = '';
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    const tile = document.createElement('div');
+                    tile.classList.add('tile');
+                    const value = board[row][col];
+                    if (value > 0) {
+                        tile.textContent = value;
+                        tile.classList.add(`tile-${value}`);
+                    }
+                    grid.appendChild(tile);
+                }
+            }
+        }
+
+        // Start the game
+        function startGame() {
+            score = 0;
+            timer = 0;
+            scoreDisplay.innerText = `Score: ${score}`;
+            timerDisplay.innerText = `Time: ${timer}s`;
+            gameOverDisplay.style.display = 'none';
+            clearInterval(gameInterval);
+            clearInterval(timerInterval);
+            resetBoard();
+            spawnTile();
+            spawnTile();
+            gameInterval = setInterval(gameLoop, 100);
+            timerInterval = setInterval(() => {
+                timer++;
+                timerDisplay.innerText = `Time: ${timer}s`;
+            }, 1000);
+        }
+
+        // Reset the board
+        function resetBoard() {
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    board[row][col] = 0;
+                }
+            }
+            renderBoard();
+        }
+
+        // Spawn a new tile (2 or 4)
+        function spawnTile() {
+            let emptyCells = [];
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    if (board[row][col] === 0) {
+                        emptyCells.push({ row, col });
+                    }
+                }
+            }
+            if (emptyCells.length > 0) {
+                const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                const value = Math.random() < 0.9 ? 2 : 4;
+                board[randomCell.row][randomCell.col] = value;
+                renderBoard();
+            }
+        }
+
+        // Move the tiles based on user input
+        function move(direction) {
+            let moved = false;
+            if (direction === 'up') {
+                for (let col = 0; col < gridSize; col++) {
+                    let newCol = [];
+                    for (let row = 0; row < gridSize; row++) {
+                        if (board[row][col] !== 0) newCol.push(board[row][col]);
+                    }
+                    newCol = mergeTiles(newCol);
+                    for (let row = 0; row < gridSize; row++) {
+                        board[row][col] = newCol[row] || 0;
+                    }
+                    if (newCol.length !== gridSize) moved = true;
+                }
+            }
+            if (direction === 'down') {
+                for (let col = 0; col < gridSize; col++) {
+                    let newCol = [];
+                    for (let row = gridSize - 1; row >= 0; row--) {
+                        if (board[row][col] !== 0) newCol.push(board[row][col]);
+                    }
+                    newCol = mergeTiles(newCol);
+                    for (let row = gridSize - 1; row >= 0; row--) {
+                        board[row][col] = newCol[gridSize - row - 1] || 0;
+                    }
+                    if (newCol.length !== gridSize) moved = true;
+                }
+            }
+            if (direction === 'left') {
+                for (let row = 0; row < gridSize; row++) {
+                    let newRow = [];
+                    for (let col = 0; col < gridSize; col++) {
+                        if (board[row][col] !== 0) newRow.push(board[row][col]);
+                    }
+                    newRow = mergeTiles(newRow);
+                    for (let col = 0; col < gridSize; col++) {
+                        board[row][col] = newRow[col] || 0;
+                    }
+                    if (newRow.length !== gridSize) moved = true;
+                }
+            }
+            if (direction === 'right') {
+                for (let row = 0; row < gridSize; row++) {
+                    let newRow = [];
+                    for (let col = gridSize - 1; col >= 0; col--) {
+                        if (board[row][col] !== 0) newRow.push(board[row][col]);
+                    }
+                    newRow = mergeTiles(newRow);
+                    for (let col = gridSize - 1; col >= 0; col--) {
+                        board[row][col] = newRow[gridSize - col - 1] || 0;
+                    }
+                    if (newRow.length !== gridSize) moved = true;
+                }
+            }
+            if (moved) {
+                spawnTile();
+                renderBoard();
+                checkGameOver();
+            }
+        }
+
+        // Merge adjacent tiles with the same value
+        function mergeTiles(tiles) {
+            let newTiles = [];
+            for (let i = 0; i < tiles.length; i++) {
+                if (tiles[i] === tiles[i + 1]) {
+                    newTiles.push(tiles[i] * 2);
+                    i++; // Skip the next tile as it's merged
+                } else {
+                    newTiles.push(tiles[i]);
+                }
+            }
+            return newTiles;
+        }
+
+        // Check if the game is over
+        function checkGameOver() {
+            let isGameOver = true;
+
+            // Check if any tile is 0 (empty cell)
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    if (board[row][col] === 0) {
+                        isGameOver = false;
+                        break;
+                    }
+                }
+            }
+
+            // Check if there are any adjacent tiles with the same value
+            if (isGameOver) {
+                for (let row = 0; row < gridSize; row++) {
+                    for (let col = 0; col < gridSize; col++) {
+                        if (
+                            (col < gridSize - 1 && board[row][col] === board[row][col + 1]) || 
+                            (row < gridSize - 1 && board[row][col] === board[row + 1][col])
+                        ) {
+                            isGameOver = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Show game over screen
+            if (isGameOver) {
+                clearInterval(gameInterval);
+                clearInterval(timerInterval);
+                gameOverDisplay.style.display = 'block';
+            }
+        }
+
+        // Handle key events for movement
+        function handleControls(event) {
+            if (selectedControls === 'wasd') {
+                if (event.key === 'w') move('up');
+                if (event.key === 's') move('down');
+                if (event.key === 'a') move('left');
+                if (event.key === 'd') move('right');
+            } else {
+                if (event.key === 'ArrowUp') move('up');
+                if (event.key === 'ArrowDown') move('down');
+                if (event.key === 'ArrowLeft') move('left');
+                if (event.key === 'ArrowRight') move('right');
+            }
+        }
+
+        // Handle settings
+        function openSettings() {
+            settingsMenu.style.display = 'block';
+        }
+
+        closeSettingsBtn.addEventListener('click', () => {
+            selectedControls = controlsSelect.value;
+            settingsMenu.style.display = 'none';
+        });
+
+        // Event listeners
+        document.getElementById('startGame').addEventListener('click', startGame);
+        document.getElementById('openSettings').addEventListener('click', openSettings);
+        document.addEventListener('keydown', handleControls);
+    </script>
+</body>
+</html>
