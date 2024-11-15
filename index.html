@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Scrollable Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FBE7C6; /* Light orange with a darker tone */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden; /* Hide page scrollbars */
+        }
+
+        header {
+            background-color: #87CEEB; /* Sky blue */
+            color: #333;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .scroll-container {
+            width: 90%;
+            height: 70vh; /* Covers 70% of the viewport height */
+            margin: 20px auto;
+            border: 3px solid #87CEEB; /* Sky blue border */
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: scroll;
+            direction: rtl; /* Scrollbar on the left */
+            background: #FFDAB9; /* Peach-orange */
+            color: #333;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .scroll-container p {
+            line-height: 1.6;
+            margin: 10px 0;
+            direction: ltr; /* Keep text alignment normal */
+        }
+
+        .cover-item {
+            position: relative;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .cover-item img,
+        .cover-item video {
+            width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            border: 2px solid #87CEEB;
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #87CEEB; /* Sky blue */
+            color: #333;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>vidio veiwer</h1>
+</header>
+
+<div class="scroll-container">
+    <p>Click on the photo or video below to view the content:</p>
+    
+    <!-- Photo cover -->
+    <div class="cover-item" onclick="navigateToPage('photo-page.html')">
+        <img src="https://via.placeholder.com/600x300" alt="Placeholder Photo">
+    </div>
+
+    <!-- Video cover -->
+    <div class="cover-item" onclick="navigateToPage('video-page.html')">
+        <video muted>
+            <source src=""E:\movies\Black_Panther_2018_Bluray.mp4"" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 Your Website</p>
+</footer>
+
+<script>
+    // Function to navigate to another page
+    function navigateToPage(url) {
+        window.location.href = url;
+    }
+</script>
+
+</body>
+</html>
+
+
+
+
+
